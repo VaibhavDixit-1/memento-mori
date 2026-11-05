@@ -1,8 +1,5 @@
 package me.timeto.shared
 
-/**
- * Based on https://developer.apple.com/design/human-interface-guidelines/color
- */
 data class Palette(
     val name: String,
     val light: ColorRgba,

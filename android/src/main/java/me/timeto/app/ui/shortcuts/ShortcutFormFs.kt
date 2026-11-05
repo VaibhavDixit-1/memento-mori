@@ -1,38 +1,26 @@
 package me.timeto.app.ui.shortcuts
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import me.timeto.app.ui.HStack
-import me.timeto.app.ui.H_PADDING
-import me.timeto.app.R
 import me.timeto.app.ui.c
 import me.timeto.app.ui.rememberVm
-import me.timeto.app.ui.roundedShape
 import me.timeto.app.ui.Screen
 import me.timeto.app.ui.form.button.FormButton
 import me.timeto.app.ui.form.FormHeader
 import me.timeto.app.ui.form.FormInput
 import me.timeto.app.ui.form.padding.FormPaddingTop
 import me.timeto.app.ui.form.padding.FormPaddingSectionHeader
-import me.timeto.app.ui.form.button.FormButtonView
 import me.timeto.app.ui.header.Header
 import me.timeto.app.ui.header.HeaderActionButton
 import me.timeto.app.ui.header.HeaderCancelButton
@@ -148,56 +136,6 @@ fun ShortcutFormFs(
                     triggerReinit = triggerReinit.value,
                 )
 
-                //
-                // Examples
-
-                FormPaddingSectionHeader()
-
-                FormHeader("EXAMPLES")
-
-                shortcutExamples.forEach { example ->
-                    FormButtonView(
-                        title = example.name,
-                        titleColor = c.text,
-                        isFirst = shortcutExamples.first() == example,
-                        isLast = shortcutExamples.last() == example,
-                        modifier = Modifier,
-                        rightView = {
-                            HStack(
-                                modifier = Modifier
-                                    .padding(end = H_PADDING)
-                            ) {
-                                Text(
-                                    text = example.hint,
-                                    color = c.secondaryText,
-                                )
-                                AnimatedVisibility(
-                                    visible = state.uri == example.uri,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.sf_checkmark_medium_medium),
-                                        contentDescription = "Selected",
-                                        tint = c.green,
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .size(18.dp)
-                                            .alpha(0.8f)
-                                            .clip(roundedShape)
-                                            .padding(3.dp)
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            reinitForm(
-                                name = example.name,
-                                uri = example.uri,
-                            )
-                        },
-                        onLongClick = {},
-                    )
-                }
-
                 FormPaddingSectionHeader()
 
                 FormButton(
@@ -242,25 +180,3 @@ fun ShortcutFormFs(
         }
     }
 }
-
-//
-// Examples Data
-
-private class ShortcutExample(
-    val name: String,
-    val hint: String,
-    val uri: String,
-)
-
-private val shortcutExamples = listOf(
-    ShortcutExample(
-        name = "10-Minute Meditation",
-        hint = "Youtube",
-        uri = "https://www.youtube.com/watch?v=O-6f5wQXSu8",
-    ),
-    ShortcutExample(
-        name = "Play a Song 😈",
-        hint = "Music App",
-        uri = "https://music.youtube.com/watch?v=ikFFVfObwss&feature=share",
-    ),
-)

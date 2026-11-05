@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -26,30 +25,22 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.timeto.app.LiveUpdatesUtils
 import me.timeto.app.NotificationsUtils
-import me.timeto.app.askAQuestion
-import me.timeto.app.openGooglePlayAppPage
 import me.timeto.app.openNotificationSettings
-import me.timeto.app.showOpenSource
 import me.timeto.app.ui.HStack
 import me.timeto.app.ui.LifecycleListener
 import me.timeto.app.ui.Screen
 import me.timeto.app.ui.activity_form.ActivityFormFs
 import me.timeto.app.ui.c
-import me.timeto.app.ui.whats_new.WhatsNewFs
 import me.timeto.app.ui.checklists.form.ChecklistFormFs
 import me.timeto.app.ui.checklists.form.ChecklistFormItemsFs
 import me.timeto.app.ui.checklists.ChecklistScreen
 import me.timeto.app.ui.daytime_picker.DaytimePickerSheet
-import me.timeto.app.ui.doc.DocFs
-import me.timeto.app.ui.donations.DonationsFs
 import me.timeto.app.ui.form.button.FormButton
 import me.timeto.app.ui.form.FormHeader
 import me.timeto.app.ui.form.FormSwitch
-import me.timeto.app.ui.form.padding.FormPaddingTop
 import me.timeto.app.ui.form.padding.FormPaddingHeaderSection
 import me.timeto.app.ui.form.padding.FormPaddingSectionHeader
 import me.timeto.app.ui.form.padding.FormPaddingSectionSection
-import me.timeto.app.ui.form.button.FormButtonEmoji
 import me.timeto.app.ui.form.button.FormButtonView
 import me.timeto.app.ui.header.Header
 import me.timeto.app.ui.home.settings.HomeSettingsButtonsFs
@@ -59,7 +50,6 @@ import me.timeto.app.ui.navigation.NavigationAlert
 import me.timeto.app.ui.navigation.picker.NavigationPickerItem
 import me.timeto.app.ui.note_folder.NoteFolderFormFs
 import me.timeto.app.ui.notes.NotesScreenFs
-import me.timeto.app.ui.privacy.PrivacyFs
 import me.timeto.app.ui.rememberVm
 import me.timeto.app.ui.repeatings.list.RepeatingsListFs
 import me.timeto.app.ui.roundedShape
@@ -172,38 +162,6 @@ fun SettingsScreen(
             state = scrollState,
             contentPadding = PaddingValues(bottom = 25.dp),
         ) {
-
-            item {
-
-                FormPaddingTop()
-
-                FormButton(
-                    title = state.readmeTitle,
-                    isFirst = true,
-                    isLast = false,
-                    withArrow = true,
-                    onClick = {
-                        navigationFs.push {
-                            DocFs(
-                                forceRead = false,
-                            )
-                        }
-                    },
-                )
-
-                FormButton(
-                    title = state.whatsNewTitle,
-                    isFirst = false,
-                    isLast = true,
-                    note = state.whatsNewNote,
-                    withArrow = true,
-                    onClick = {
-                        navigationScreen.push {
-                            WhatsNewFs()
-                        }
-                    },
-                )
-            }
 
             //
             // Repeatings
@@ -519,55 +477,6 @@ fun SettingsScreen(
             }
 
             //
-            // Support the Developer
-
-            item {
-
-                FormPaddingSectionHeader()
-
-                FormHeader(state.supportTheDeveloperHeader)
-
-                FormPaddingHeaderSection()
-
-                val withDonations = SystemInfo.instance.isFdroid
-
-                if (withDonations) {
-                    FormButtonEmoji(
-                        title = "Donate",
-                        emoji = "❤️",
-                        withArrow = false,
-                        isFirst = true,
-                        isLast = false,
-                        onClick = {
-                            navigationFs.push {
-                                DonationsFs()
-                            }
-                        },
-                    )
-                }
-
-                FormButtonEmoji(
-                    title = "Write a Review on Google Play",
-                    emoji = state.supportTheDeveloperReviewEmoji,
-                    withArrow = false,
-                    isFirst = !withDonations,
-                    isLast = false,
-                    onClick = {
-                        openGooglePlayAppPage(context = context)
-                    },
-                )
-
-                FormButton(
-                    title = state.supportTheDeveloperGitHubTitle,
-                    isFirst = false,
-                    isLast = true,
-                    withArrow = false,
-                    onClick = {
-                        showOpenSource()
-                    },
-                )
-            }
-
             //
             // Settings
 
@@ -731,58 +640,6 @@ fun SettingsScreen(
             }
 
             //
-            // Misc
-
-            item {
-
-                FormPaddingSectionSection()
-
-                FormButton(
-                    title = "Ask a Question",
-                    isFirst = true,
-                    isLast = false,
-                    onClick = {
-                        askAQuestion(subject = state.feedbackSubject)
-                    },
-                )
-
-                FormButton(
-                    title = "Open Source",
-                    isFirst = false,
-                    isLast = false,
-                    onClick = {
-                        showOpenSource()
-                    },
-                )
-
-                FormButtonEmoji(
-                    title = "Privacy",
-                    emoji = state.privacyEmoji ?: "",
-                    withArrow = true,
-                    isFirst = false,
-                    isLast = true,
-                    onClick = {
-                        navigationFs.push {
-                            PrivacyFs(toForceChoice = false)
-                        }
-                    },
-                )
-            }
-
-            item {
-                Row {
-                    Text(
-                        text = state.infoText,
-                        modifier = Modifier
-                            .padding(top = 24.dp)
-                            .weight(1f),
-                        color = c.secondaryText,
-                        fontSize = 15.sp,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 20.sp,
-                    )
-                }
-            }
         }
     }
 }

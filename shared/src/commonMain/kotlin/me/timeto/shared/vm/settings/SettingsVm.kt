@@ -8,15 +8,12 @@ import me.timeto.shared.backups.Backup
 import me.timeto.shared.Cache
 import me.timeto.shared.DayStartOffsetUtils
 import me.timeto.shared.HomeButtonSort
-import me.timeto.shared.SystemInfo
 import me.timeto.shared.UnixTime
 import me.timeto.shared.db.ChecklistDb
 import me.timeto.shared.db.KvDb
 import me.timeto.shared.db.KvDb.Companion.asDayStartOffsetSeconds
-import me.timeto.shared.db.KvDb.Companion.isSendingReports
 import me.timeto.shared.db.ShortcutDb
 import me.timeto.shared.launchExIo
-import me.timeto.shared.prayEmoji
 import me.timeto.shared.reportApi
 import me.timeto.shared.combine
 import me.timeto.shared.db.ActivityDb
@@ -25,7 +22,6 @@ import me.timeto.shared.db.NoteFolderDb
 import me.timeto.shared.textFeatures
 import me.timeto.shared.toTimerHintNote
 import me.timeto.shared.vm.app.AppVm.Companion.backupStateFlow
-import me.timeto.shared.vm.whats_new.WhatsNewVm
 import me.timeto.shared.vm.Vm
 
 class SettingsVm : Vm<SettingsVm.State>() {
@@ -42,38 +38,16 @@ class SettingsVm : Vm<SettingsVm.State>() {
         val noteFoldersDb: List<NoteFolderDb>,
         val isZenModeEnabled: Boolean,
         val dayStartSeconds: Int,
-        val feedbackSubject: String,
         val autoBackupTimeString: String,
-        val privacyEmoji: String?,
     ) {
 
         val headerTitle = "timeto.me"
-        val readmeTitle = "How to Use the App"
-        val whatsNewTitle = "What's New"
-        val whatsNewNote: String =
-            WhatsNewVm.historyItemsUi.first().timeAgoText
-
-        val supportTheDeveloperHeader = "SUPPORT THE DEVELOPER"
-        val supportTheDeveloperReviewEmoji = prayEmoji
-        val supportTheDeveloperGitHubTitle = "Star on GitHub"
-
         val dayStartNote: String = dayStartSecondsToString(dayStartSeconds)
         val dayStartListItems = (-10..10).map { hour ->
             DayStartOffsetListItem(
                 seconds = hour * 3_600,
                 note = dayStartSecondsToString(hour * 3_600)
             )
-        }
-
-        val infoText: String = run {
-            val systemInfo = SystemInfo.instance
-            val osName: String = when (systemInfo.os) {
-                is SystemInfo.Os.Android -> "Android"
-                is SystemInfo.Os.Ios -> "iOS"
-                is SystemInfo.Os.Watchos -> "watchOS"
-            }
-            val flavor: String = systemInfo.flavor?.let { "-$it" } ?: ""
-            "timeto.me for $osName\nv${systemInfo.version}.${systemInfo.build}$flavor"
         }
     }
 
@@ -85,9 +59,7 @@ class SettingsVm : Vm<SettingsVm.State>() {
             noteFoldersDb = Cache.noteFoldersDb,
             isZenModeEnabled = KvDb.KEY.ZEN_MODE_ENABLED.selectOrNullCached().isZenModeEnabled(),
             dayStartSeconds = DayStartOffsetUtils.getOffsetSecondsCached(),
-            feedbackSubject = DEFAULT_FEEDBACK_SUBJECT,
             autoBackupTimeString = prepAutoBackupTimeString(AutoBackup.lastTimeCache.value),
-            privacyEmoji = KvDb.KEY.IS_SENDING_REPORTS.selectOrNullCached().privacyEmojiOrNull(),
         )
     )
 
@@ -99,17 +71,13 @@ class SettingsVm : Vm<SettingsVm.State>() {
             ShortcutDb.selectAscFlow(),
             NoteFolderDb.selectAllSortedFlow(),
             KvDb.KEY.DAY_START_OFFSET_SECONDS.selectOrNullFlow(),
-            KvDb.KEY.IS_SENDING_REPORTS.selectOrNullFlow(),
             AutoBackup.lastTimeCache,
-            KvDb.KEY.FEEDBACK_SUBJECT.selectStringOrNullFlow(),
         ) { activitiesDb: List<ActivityDb>,
             checklistsDb: List<ChecklistDb>,
             shortcutsDb: List<ShortcutDb>,
             noteFoldersDb: List<NoteFolderDb>,
             dayStartOffsetSeconds: KvDb?,
-            isSendingReports: KvDb?,
-            autoBackupLastTime: UnixTime?,
-            feedbackSubject: String? ->
+            autoBackupLastTime: UnixTime? ->
             state.update {
                 it.copy(
                     activitiesUi = ActivityUi.buildList(activitiesDb),
@@ -117,9 +85,7 @@ class SettingsVm : Vm<SettingsVm.State>() {
                     shortcutsDb = shortcutsDb,
                     noteFoldersDb = noteFoldersDb,
                     dayStartSeconds = dayStartOffsetSeconds.asDayStartOffsetSeconds(),
-                    privacyEmoji = isSendingReports.privacyEmojiOrNull(),
                     autoBackupTimeString = prepAutoBackupTimeString(autoBackupLastTime),
-                    feedbackSubject = feedbackSubject ?: DEFAULT_FEEDBACK_SUBJECT,
                 )
             }
         }.launchIn(scopeVm)
@@ -226,11 +192,6 @@ class SettingsVm : Vm<SettingsVm.State>() {
 }
 
 ///
-
-private const val DEFAULT_FEEDBACK_SUBJECT = "Feedback"
-
-private fun KvDb?.privacyEmojiOrNull(): String? =
-    if (this.isSendingReports()) null else prayEmoji
 
 private fun dayStartSecondsToString(seconds: Int): String {
     if ((seconds % 3_600) != 0) {

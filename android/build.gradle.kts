@@ -10,7 +10,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "me.timeto.app"
+        applicationId = "com.momentomori.app"
         minSdk = 31
         targetSdk = 37
         versionCode = 626

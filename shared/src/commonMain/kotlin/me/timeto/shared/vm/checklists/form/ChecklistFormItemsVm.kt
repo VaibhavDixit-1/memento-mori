@@ -10,7 +10,6 @@ import me.timeto.shared.db.ChecklistItemDb
 import me.timeto.shared.launchExIo
 import me.timeto.shared.DialogsManager
 import me.timeto.shared.moveUiListAndroid
-import me.timeto.shared.moveUiListIos
 import me.timeto.shared.textFeatures
 import me.timeto.shared.vm.Vm
 
@@ -103,12 +102,6 @@ class ChecklistFormItemsVm(
     }
 
     ///
-
-    fun moveIos(fromIdx: Int, toIdx: Int) {
-        state.value.checklistItemsUi.moveUiListIos(fromIdx, toIdx) {
-            ChecklistItemDb.updateSortMany(itemsDb = it.map { it.checklistItemDb })
-        }
-    }
 
     ///
 

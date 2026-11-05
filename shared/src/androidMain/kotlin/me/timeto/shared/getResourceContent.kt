@@ -2,7 +2,7 @@ package me.timeto.shared
 
 import java.io.InputStreamReader
 
-actual fun getResourceContent(file: String, type: String) = androidApplication
+actual fun getResourceContent(file: String) = androidApplication
     .resources
     .openRawResource(
         // No type, only file name without extension.

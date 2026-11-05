@@ -3,18 +3,15 @@ package me.timeto.app.ui.home
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,21 +21,16 @@ import me.timeto.app.ui.VStack
 import me.timeto.app.ui.c
 import me.timeto.app.ui.pxToDp
 import me.timeto.app.ui.rememberVm
-import me.timeto.app.ui.roundedShape
 import me.timeto.app.ui.checklists.ChecklistView
 import me.timeto.app.ui.Padding
 import me.timeto.app.ui.Screen
 import me.timeto.app.ui.SpacerW1
 import me.timeto.app.ui.calendar.CalendarTabsView
-import me.timeto.app.ui.doc.DocFs
-import me.timeto.app.ui.donations.DonationsFs
 import me.timeto.app.ui.home.bar.HomeBarView
 import me.timeto.app.ui.home.buttons.HomeButtonsView
 import me.timeto.app.ui.home.tasks.HomeTasksView
 import me.timeto.app.ui.navigation.LocalNavigationFs
-import me.timeto.app.ui.privacy.PrivacyFs
 import me.timeto.app.ui.task_form.TaskFormFs
-import me.timeto.app.ui.whats_new.WhatsNewFs
 import me.timeto.app.widget.MyWidgetOpenApp
 import me.timeto.shared.vm.home.HomeMode
 import me.timeto.shared.vm.home.HomeVm
@@ -70,15 +62,6 @@ fun HomeScreen() {
         vm.setTodayTaskFolder()
     }
 
-    val forceOpenDoc = state.forceOpenDoc
-    LaunchedEffect(forceOpenDoc) {
-        if (forceOpenDoc) {
-            navigationFs.push {
-                DocFs(forceRead = true)
-            }
-        }
-    }
-
     val checklistDb = state.checklistDb
     VStack(
         modifier = Modifier
@@ -99,42 +82,6 @@ fun HomeScreen() {
                 modifier = Modifier.padding(top = 10.dp),
                 contentPadding = PaddingValues(horizontal = 50.dp),
             )
-
-            val privacyMessage = state.privacyMessage
-            if (privacyMessage != null) {
-                MessageButton(
-                    title = privacyMessage,
-                    onClick = {
-                        navigationFs.push {
-                            PrivacyFs(toForceChoice = true)
-                        }
-                    },
-                )
-            }
-
-            val whatsNewMessage = state.whatsNewMessage
-            if (whatsNewMessage != null) {
-                MessageButton(
-                    title = whatsNewMessage,
-                    onClick = {
-                        navigationFs.push {
-                            WhatsNewFs()
-                        }
-                    },
-                )
-            }
-
-            val donationsMessage = state.donationsMessage
-            if (donationsMessage != null) {
-                MessageButton(
-                    title = donationsMessage,
-                    onClick = {
-                        navigationFs.push {
-                            DonationsFs()
-                        }
-                    },
-                )
-            }
 
             val checklistHintUi = state.checklistHintUi
             if (checklistHintUi != null) {
@@ -212,13 +159,6 @@ fun HomeScreen() {
             HomeNotificationsView(notificationsPermissionUi)
         }
 
-        if (state.showRate) {
-            HomeRateView(
-                homeVm = vm,
-                homeState = state,
-            )
-        }
-
         HomeBarView(
             homeBarUi = state.homeBarUi,
             changeTaskFolder = { taskFolderUi ->
@@ -261,28 +201,4 @@ fun HomeScreen() {
 
         Padding(vertical = 8.dp)
     }
-}
-
-///
-
-@Composable
-private fun MessageButton(
-    title: String,
-    onClick: () -> Unit,
-) {
-    Text(
-        text = title,
-        modifier = Modifier
-            .padding(vertical = 6.dp)
-            .clip(roundedShape)
-            .clickable {
-                onClick()
-            }
-            .background(c.red)
-            .padding(horizontal = 10.dp)
-            .padding(vertical = 4.dp),
-        color = c.white,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
-    )
 }

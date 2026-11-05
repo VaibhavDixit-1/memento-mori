@@ -148,18 +148,6 @@ data class IntervalDb(
             )
         }
 
-        suspend fun insertForDemo(
-            time: Int,
-            activityDb: ActivityDb,
-            note: String?,
-        ): Unit = dbIo {
-            db.intervalQueries.insertAutoIncremented(
-                time = time,
-                activityId = activityDb.id,
-                note = note,
-            )
-        }
-
         ///
 
         suspend fun pauseLastInterval(): Unit = dbIo {

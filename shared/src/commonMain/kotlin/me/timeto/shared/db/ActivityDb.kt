@@ -614,9 +614,7 @@ private fun assertIsValidName(name: String) {
         throw UiException("Goal name is empty")
 }
 
-// todo apple colors
 // attractiveness. In fillInitData() hardcode by indexes.
-// https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/color
 // https://material.io/resources/color
 private val colors = listOf(
     ColorRgba(52, 199, 89), // Green

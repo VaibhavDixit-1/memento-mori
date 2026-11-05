@@ -25,7 +25,7 @@ object Backup {
                 mapOf(
                     "build" to JsonPrimitive(systemInfo.build),
                     "version" to JsonPrimitive(systemInfo.version),
-                    "os" to JsonPrimitive(systemInfo.os.fullVersion),
+                    "os" to JsonPrimitive(systemInfo.osFullVersion),
                     "device" to JsonPrimitive(systemInfo.device),
                     "flavor" to JsonPrimitive(systemInfo.flavor),
                 )

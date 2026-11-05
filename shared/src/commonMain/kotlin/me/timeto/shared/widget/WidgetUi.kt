@@ -31,19 +31,6 @@ data class WidgetUi(
 
     companion object {
 
-        suspend fun buildIos(
-            width: Float,
-            rowHeight: Float,
-            spacing: Float,
-        ): WidgetUi {
-            Cache.init()
-            return build(
-                width = width,
-                rowHeight = rowHeight,
-                spacing = spacing,
-            )
-        }
-
         suspend fun build(
             width: Float,
             rowHeight: Float,

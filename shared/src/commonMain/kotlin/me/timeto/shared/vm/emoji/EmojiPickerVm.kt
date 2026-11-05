@@ -28,7 +28,7 @@ class EmojiPickerVm : Vm<EmojiPickerVm.State>() {
     init {
         val scopeVm = scopeVm()
         scopeVm.launchEx {
-            val jString: String = getResourceContent("emojis", "json")
+            val jString: String = getResourceContent("emojis")
             allEmojis = Json.parseToJsonElement(jString).jsonArray.map { jElement ->
                 val strings: List<String> =
                     jElement.jsonArray.map { it.jsonPrimitive.content }

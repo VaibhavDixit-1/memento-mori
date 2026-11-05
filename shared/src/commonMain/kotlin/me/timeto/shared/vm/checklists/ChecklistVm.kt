@@ -8,7 +8,6 @@ import me.timeto.shared.launchExIo
 import me.timeto.shared.onEachExIn
 import me.timeto.shared.DialogsManager
 import me.timeto.shared.TextFeatures
-import me.timeto.shared.moveUiListIos
 import me.timeto.shared.textFeatures
 import me.timeto.shared.vm.Vm
 
@@ -57,12 +56,6 @@ class ChecklistVm(
                 }
             },
         )
-    }
-
-    fun moveIos(fromIdx: Int, toIdx: Int) {
-        state.value.itemsDb.moveUiListIos(fromIdx, toIdx) {
-            ChecklistItemDb.updateSortMany(itemsDb = it)
-        }
     }
 
     ///

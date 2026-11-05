@@ -71,7 +71,6 @@ import androidx.core.view.ViewCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.timeto.app.ui.doc.docFsIsOpenFlow
 import kotlin.time.Duration.Companion.seconds
 
 class MainActivity : ComponentActivity() {
@@ -138,12 +137,9 @@ class MainActivity : ComponentActivity() {
 
             val isZenModeAllowed: Boolean =
                 state.isZenModeAllowed
-            val docFsIsOpenFlowValue: Boolean =
-                docFsIsOpenFlow.collectAsState().value
-            LaunchedEffect(isZenModeAllowed, docFsIsOpenFlowValue) {
+            LaunchedEffect(isZenModeAllowed) {
                 // По умолчанию - ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 requestedOrientation = when {
-                    docFsIsOpenFlowValue -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     isZenModeAllowed -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
                     else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 }

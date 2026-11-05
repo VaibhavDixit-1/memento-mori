@@ -144,25 +144,25 @@ data class RepeatingDb(
             is Period.DaysOfWeek -> {
                 val weekDays = period.weekDays
                 if (weekDays.isEmpty())
-                    throw UiException("getNextDay() weekDays.isEmpty(). Please contact us.")
+                    throw UiException("Invalid repeating schedule: no weekdays selected.")
                 for (i in 1..7) {
                     val testDay = UnixTime.byLocalDay(last_day + i)
                     if (testDay.dayOfWeek() in period.weekDays)
                         return testDay.localDay
                 }
-                throw UiException("getNextDay() DaysOfWeek wtf?. Please contact us.")
+                throw UiException("Invalid repeating schedule: unknown weekday format.")
             }
 
             is Period.DaysOfMonth -> {
                 // todo catch
                 if (period.days.isEmpty())
-                    throw UiException("period.days.isEmpty(). Please contact us.")
+                throw UiException("Invalid repeating schedule: no dates selected.")
                 period.days.minOf { getNextMonthDay(last_day, it) }
             }
 
             is Period.DaysOfYear -> {
                 if (period.items.isEmpty())
-                    throw UiException("Period.DaysOfYear items.isEmpty(). Please contact us.")
+                throw UiException("Invalid repeating schedule: no yearly dates selected.")
                 period.items.minOf { item ->
                     getNextDayOfYear(last_day, item)
                 }

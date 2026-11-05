@@ -11,11 +11,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonArray
 import me.timeto.shared.*
-import me.timeto.shared.SystemInfo
 import me.timeto.shared.backups.Backupable__Holder
 import me.timeto.shared.backups.Backupable__Item
 import me.timeto.shared.getString
-import me.timeto.shared.time
 import me.timeto.shared.toBoolean10
 import me.timeto.shared.toJsonArray
 
@@ -38,32 +36,11 @@ data class KvDb(
 
         ///
 
-        suspend fun selectTokenOrNullSafe(): String? = try {
-            KEY.TOKEN.selectStringOrNull()
-        } catch (e: Throwable) {
-            // todo fallback report
-            zlog("KvDb.selectTokenOrNullSafe():$e")
-            null
-        }
-
-        ///
-
         fun KvDb?.asDayStartOffsetSeconds(): Int =
             this?.value?.toInt() ?: 0
 
-        fun KvDb?.isSendingReports(): Boolean {
-            val time: Int =
-                this?.value?.toInt() ?: return !SystemInfo.instance.isFdroid
-            return time > 0
-        }
-
         fun KvDb?.isZenModeEnabled(): Boolean =
             this?.value?.toBoolean10() ?: true
-
-        suspend fun upsertIsSendingReports(isSendingReports: Boolean) {
-            val time: Int = if (isSendingReports) time() else (-time())
-            KEY.IS_SENDING_REPORTS.upsertInt(time)
-        }
 
         //
         // Backupable Holder
@@ -83,19 +60,8 @@ data class KvDb(
     enum class KEY {
 
         DAY_START_OFFSET_SECONDS,
-        RATE_TIME,
-        DONATIONS_TIME,
-        DONATIONS_EMAIL,
-        DONATIONS_ACTIVATED_MESSAGE,
-        TOKEN,
-        TOKEN_PASSWORD,
-        WHATS_NEW_CHECK_UNIX_DAY,
-        FEEDBACK_SUBJECT,
-        IS_SENDING_REPORTS,
         ZEN_MODE_ENABLED,
-        ZEN_MODE_CHECKLISTS_VISIBILITY,
-        DOC_FORCE_READ_TIME,
-        IOS_WIDGET_UPDATE_ID;
+        ZEN_MODE_CHECKLISTS_VISIBILITY;
 
         // selectOrNull..
 

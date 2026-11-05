@@ -1,6 +1,5 @@
 package me.timeto.shared.vm.history
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.timeto.shared.*
@@ -12,7 +11,6 @@ import me.timeto.shared.DialogsManager
 import me.timeto.shared.db.ActivityDb
 import me.timeto.shared.vm.history.form.HistoryFormUtils
 import me.timeto.shared.vm.Vm
-import kotlin.time.Duration.Companion.milliseconds
 
 private const val initInDays: Int = -1
 
@@ -31,11 +29,6 @@ class HistoryVm : Vm<HistoryVm.State>() {
     init {
         val scopeVm = scopeVm()
         scopeVm.launchEx {
-            // Fix https://developer.apple.com/forums/thread/741406
-            if (SystemInfo.instance.os is SystemInfo.Os.Ios) {
-                selectAndUpdate(0)
-                delay(500.milliseconds) // Doesn't work less than 400
-            }
             selectAndUpdate(initInDays)
         }
         IntervalDb.anyChangeFlow().drop(1).onEachExIn(scopeVm) {
