@@ -74,7 +74,7 @@ fun HomeTimerView(
         ZStack(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 7.dp),
+                .padding(bottom = 8.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
 
@@ -260,7 +260,7 @@ private fun TimerInfoButton(
             .clickable {
                 onClick()
             }
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         color = color,
         fontSize = 19.sp,
         fontWeight = FontWeight.Thin,

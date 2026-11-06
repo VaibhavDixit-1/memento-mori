@@ -90,7 +90,7 @@ fun HistoryFs() {
                         Text(
                             text = intervalUi.timeString,
                             modifier = Modifier
-                                .padding(vertical = 2.dp)
+                                .padding(vertical = 8.dp)
                                 .padding(start = H_PADDING_HALF, end = H_PADDING),
                             color = if (intervalUi.isStartsPrevDay) c.transparent else c.text,
                             fontWeight = FontWeight.Medium,
@@ -98,7 +98,7 @@ fun HistoryFs() {
 
                         ZStack(
                             modifier = Modifier
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = 8.dp)
                                 .width(10.dp)
                                 .height(10.dp.limitMin(timeHeight))
                                 .align(Alignment.CenterVertically)
@@ -111,8 +111,8 @@ fun HistoryFs() {
                             modifier = Modifier
                                 .padding(start = H_PADDING)
                                 .weight(1f)
-                                .padding(vertical = 2.dp),
-                            color = c.white,
+                                .padding(vertical = 8.dp),
+                            color = c.text,
                             fontWeight = FontWeight.Medium,
                         )
 
@@ -120,7 +120,7 @@ fun HistoryFs() {
                             text = intervalUi.periodString,
                             modifier = Modifier
                                 .padding(horizontal = H_PADDING)
-                                .padding(vertical = 2.dp),
+                                .padding(vertical = 8.dp),
                             color = c.secondaryText,
                             fontWeight = FontWeight.Light,
                         )
@@ -136,7 +136,7 @@ fun HistoryFs() {
                 HStack(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp),
+                        .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     Text(
@@ -144,9 +144,9 @@ fun HistoryFs() {
                         modifier = Modifier
                             .clip(roundedShape)
                             .background(c.blue)
-                            .padding(horizontal = 9.dp)
-                            .padding(top = 2.dp, bottom = 1.dp),
-                        color = c.white,
+                            .padding(horizontal = 8.dp)
+                            .padding(vertical = 8.dp),
+                        color = c.text,
                         fontSize = 14.sp,
                     )
 

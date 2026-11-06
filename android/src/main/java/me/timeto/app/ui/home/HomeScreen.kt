@@ -79,7 +79,7 @@ fun HomeScreen() {
 
             HomeExtraTriggersView(
                 extraTriggers = state.extraTriggers,
-                modifier = Modifier.padding(top = 10.dp),
+                modifier = Modifier.padding(top = 8.dp),
                 contentPadding = PaddingValues(horizontal = 50.dp),
             )
 

@@ -12,5 +12,5 @@
 /android/base/release/
 /android/fdroid/release/
 
-/apple/timeto.me.xcodeproj/xcuserdata/
-/apple/timeto.me.xcodeproj/project.xcworkspace/xcuserdata/
+AGENTS.md
+.codex/

@@ -150,7 +150,7 @@ private fun MenuButton(
             .clickable {
                 onTap()
             }
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         fontSize = 14.sp,
@@ -163,7 +163,7 @@ private fun MenuButton(
 private fun MenuSeparator() {
     ZStack(
         modifier = Modifier
-            .padding(horizontal = 4.dp)
+            .padding(horizontal = 8.dp)
             .width(onePx)
             .height(16.dp)
             .background(c.secondaryText),

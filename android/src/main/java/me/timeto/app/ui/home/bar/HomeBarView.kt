@@ -76,8 +76,8 @@ fun HomeBarView(
 
             Text(
                 text = when (homeBarUi.homeMode) {
-                    is HomeMode.TaskFolder -> "Task.."
-                    is HomeMode.NoteFolder -> "Note.."
+                    is HomeMode.TaskFolder -> "+"
+                    is HomeMode.NoteFolder -> "+"
                 },
                 color = c.secondaryText,
                 fontSize = HomeScreen__primaryFontSize,

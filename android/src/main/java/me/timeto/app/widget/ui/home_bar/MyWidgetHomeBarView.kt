@@ -54,8 +54,8 @@ fun MyWidgetHomeBarView(
 
             Text(
                 text = when (homeBarUi.homeMode) {
-                    is HomeMode.TaskFolder -> "Task.."
-                    is HomeMode.NoteFolder -> "Note.."
+                    is HomeMode.TaskFolder -> "+"
+                    is HomeMode.NoteFolder -> "+"
                 },
                 style = TextStyle(
                     color = c.secondaryText.toGlanceColorProvider(),

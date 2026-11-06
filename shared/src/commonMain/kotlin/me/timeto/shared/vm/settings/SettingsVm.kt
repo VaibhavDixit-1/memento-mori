@@ -41,7 +41,7 @@ class SettingsVm : Vm<SettingsVm.State>() {
         val autoBackupTimeString: String,
     ) {
 
-        val headerTitle = "timeto.me"
+        val headerTitle = "Memento Mori"
         val dayStartNote: String = dayStartSecondsToString(dayStartSeconds)
         val dayStartListItems = (-10..10).map { hour ->
             DayStartOffsetListItem(
