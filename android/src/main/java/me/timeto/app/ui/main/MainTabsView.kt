@@ -108,7 +108,7 @@ fun MainTabsView(
                     .motionEventSpy { event ->
                         if (event.action == MotionEvent.ACTION_DOWN) {
                             onTabChanged(MainTabEnum.home)
-                            HomeVm.showStartScreen()
+                            HomeVm.showStartScreen(toggleIsPurple = true)
                         }
                     },
                 verticalArrangement = Arrangement.Center,

@@ -29,10 +29,11 @@ class MainTabsVm : Vm<MainTabsVm.State>() {
 
         val dateText: String = UnixTime().getStringByComponents(
             UnixTime.StringComponent.dayOfWeek3,
-            UnixTime.StringComponent.space,
-            UnixTime.StringComponent.dayOfMonth,
+            UnixTime.StringComponent.comma,
             UnixTime.StringComponent.space,
             UnixTime.StringComponent.month3,
+            UnixTime.StringComponent.space,
+            UnixTime.StringComponent.dayOfMonth,
         )
 
         val batteryUi: BatteryUi = run {

@@ -19,11 +19,11 @@ class HomeVm : Vm<HomeVm.State>() {
 
     companion object {
 
-        private val showStartScreenFlow = MutableSharedFlow<Unit>()
+        private val showStartScreenFlow = MutableSharedFlow<Boolean>()
 
-        fun showStartScreen() {
+        fun showStartScreen(toggleIsPurple: Boolean = false) {
             launchExIo {
-                showStartScreenFlow.emit(Unit)
+                showStartScreenFlow.emit(toggleIsPurple)
             }
         }
     }
@@ -236,8 +236,9 @@ class HomeVm : Vm<HomeVm.State>() {
             }
         }.launchIn(scopeVm)
 
-        showStartScreenFlow.onEachExIn(scopeVm) {
+        showStartScreenFlow.onEachExIn(scopeVm) { togglePurple ->
             setTodayTaskFolder()
+            if (togglePurple) toggleIsPurple()
         }
 
         ///
