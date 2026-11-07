@@ -274,7 +274,11 @@ fun HomeTimerView(
                 )
 
                 TimerInfoButton(
-                    text = infoUi.untilDaytimeUi.text,
+                    text = when (infoUi.timerType) {
+                        is me.timeto.shared.db.IntervalDb.TimerType.Timer -> infoUi.untilDaytimeUi.text
+                        is me.timeto.shared.db.IntervalDb.TimerType.OverdueTimer,
+                        is me.timeto.shared.db.IntervalDb.TimerType.Stopwatch -> "–"
+                    },
                     iconResId = R.drawable.ph_alarm_thin,
                     color = timerColor,
                     onClick = {

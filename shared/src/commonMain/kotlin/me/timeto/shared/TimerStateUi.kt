@@ -172,8 +172,10 @@ class TimerStateUi(
 
         val timerText: String = when (timerType) {
             is IntervalDb.TimerType.Timer -> secondsToString(timerType.timer)
-            is IntervalDb.TimerType.OverdueTimer,
-            is IntervalDb.TimerType.Stopwatch -> "Timer"
+            is IntervalDb.TimerType.OverdueTimer ->
+                secondsToString(timerType.calcOverdueSeconds(time()))
+            is IntervalDb.TimerType.Stopwatch ->
+                secondsToString(timerType.calcElapsedSeconds(time()))
         }
 
         fun setUntilDaytime(daytimeUi: DaytimeUi) {
