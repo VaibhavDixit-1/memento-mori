@@ -1,0 +1,60 @@
+import kotlin.Int;
+
+CREATE TABLE RepeatingSQ (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    text TEXT NOT NULL,
+    last_day INTEGER AS Int NOT NULL,
+    type_id INTEGER AS Int NOT NULL,
+    value TEXT NOT NULL,
+    daytime INTEGER AS Int, -- Nullable!
+    is_important INTEGER AS Int NOT NULL,
+    in_calendar INTEGER AS Int NOT NULL
+);
+
+--
+-- Select
+
+selectAsc:
+SELECT *
+FROM RepeatingSQ
+ORDER BY id ASC;
+
+--
+-- Insert
+
+insert:
+INSERT INTO RepeatingSQ
+(id, text, last_day, type_id, value, daytime, is_important, in_calendar)
+VALUES
+(?, ?, ?, ?, ?, ?, ?, ?);
+
+--
+-- Update
+
+updateById:
+UPDATE RepeatingSQ
+SET text=?, last_day=?, type_id=?, value=?, daytime=?,
+    is_important=?, in_calendar=?
+WHERE id=?;
+
+updateLastDayById:
+UPDATE RepeatingSQ
+SET last_day=?
+WHERE id=?;
+
+updateTextTodoRemove:
+UPDATE RepeatingSQ
+SET text=?
+WHERE id=?;
+
+--
+-- Delete
+
+deleteById:
+DELETE
+FROM RepeatingSQ
+WHERE id=?;
+
+deleteAll:
+DELETE
+FROM RepeatingSQ;

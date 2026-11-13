@@ -1,0 +1,100 @@
+import kotlin.Int;
+
+CREATE TABLE IntervalSq (
+    id INTEGER AS Int NOT NULL PRIMARY KEY AUTOINCREMENT,
+    time INTEGER AS Int NOT NULL,
+    activity_id INTEGER AS Int NOT NULL,
+    note TEXT -- Nullable!
+);
+
+CREATE INDEX IntervalSq_time ON IntervalSq(time);
+
+--
+-- Select
+
+anyChange:
+SELECT id FROM IntervalSq LIMIT 1;
+
+selectBetweenTimeAsc:
+SELECT *
+FROM IntervalSq
+WHERE time BETWEEN :timeStart AND :timeFinish
+ORDER BY time ASC, id ASC
+LIMIT :limit;
+
+selectBetweenTimeDesc:
+SELECT *
+FROM IntervalSq
+WHERE time BETWEEN :timeStart AND :timeFinish
+ORDER BY time DESC, id DESC
+LIMIT :limit;
+
+selectCount:
+SELECT COUNT(*)
+FROM IntervalSq;
+
+selectByTime:
+SELECT *
+FROM IntervalSq
+WHERE time=?;
+
+selectAsc:
+SELECT *
+FROM IntervalSq
+ORDER BY time ASC, id ASC
+LIMIT :limit;
+
+selectDesc:
+SELECT *
+FROM IntervalSq
+ORDER BY time DESC, id DESC
+LIMIT :limit;
+
+selectLastInsertRowId:
+SELECT last_insert_rowid();
+
+--
+-- Insert
+
+insertAutoIncremented:
+INSERT INTO IntervalSq
+VALUES (NULL, :time, :activityId, :note);
+
+insertWithId:
+INSERT INTO IntervalSq
+VALUES ?;
+
+--
+-- Update
+
+updateById:
+UPDATE IntervalSq
+SET time=:time, activity_id=:activityId, note=:note
+WHERE id=:id;
+
+updateNoteById:
+UPDATE IntervalSq
+SET note=?
+WHERE id=?;
+
+updateNoteTodoRemove:
+UPDATE IntervalSq
+SET note=?
+WHERE id=?;
+
+updateActivity:
+UPDATE IntervalSq
+SET activity_id=:newActivityId
+WHERE activity_id=:oldActivityId;
+
+--
+-- Delete
+
+deleteById:
+DELETE
+FROM IntervalSq
+WHERE id=?;
+
+deleteAll:
+DELETE
+FROM IntervalSq;

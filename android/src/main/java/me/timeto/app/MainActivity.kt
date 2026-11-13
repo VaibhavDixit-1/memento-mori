@@ -1,0 +1,409 @@
+package me.timeto.app
+
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.Manifest
+import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.res.Configuration
+import android.os.BatteryManager
+import android.os.Build
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.darkColors
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.Insets
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import me.timeto.app.ui.LifecycleListener
+import me.timeto.app.ui.ZStack
+import me.timeto.app.ui.c
+import me.timeto.app.ui.main.MainScreen
+import me.timeto.app.ui.navigation.LocalNavigationFs
+import me.timeto.app.ui.navigation.NavigationFs
+import me.timeto.app.ui.pxToDp
+import me.timeto.app.ui.rememberVm
+import me.timeto.app.ui.zen_mode.ZenModeView
+import me.timeto.app.widget.MyWidgetOpenApp
+import me.timeto.app.widget.MyWidgetReceiver
+import me.timeto.shared.db.ShortcutDb
+import me.timeto.shared.BatteryInfo
+import me.timeto.shared.LiveActivity
+import me.timeto.shared.NotificationAlarm
+import me.timeto.shared.NotificationsPermission
+import me.timeto.shared.backups.AutoBackup
+import me.timeto.shared.ShortcutPerformer
+import me.timeto.shared.keepScreenOnStateFlow
+import me.timeto.shared.launchExIo
+import me.timeto.shared.localUtcOffsetSync
+import me.timeto.shared.onEachExIn
+import me.timeto.shared.reportApi
+import me.timeto.shared.vm.app.AppVm
+import kotlin.time.Duration.Companion.milliseconds
+import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
+
+class MainActivity : ComponentActivity() {
+
+    val statusBarHeightFlow = MutableStateFlow(0.dp)
+    val windowInsetsFlow = MutableStateFlow(WindowInsets(0, 0, 0, 0))
+
+    private val batteryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            BatteryInfo.emitLevel(level * 100 / scale)
+            val plugged: Int = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
+            BatteryInfo.emitIsCharging(plugged != 0)
+        }
+    }
+
+    private val timeZoneReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            localUtcOffsetSync()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private val notificationsPermissionRequester = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        // WARNING If the user has pressed back:
+        // rationale=false and isGranted=false even it is the first request!
+        // No way to check the real state "denied" or "not asked" ;(
+        val notificationsPermission: NotificationsPermission = when {
+            isGranted -> NotificationsPermission.granted
+            shouldNotificationsPermissionRationale() -> NotificationsPermission.rationale
+            else -> NotificationsPermission.denied
+        }
+        notificationsPermission.emit()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        registerReceiver(timeZoneReceiver, IntentFilter(Intent.ACTION_TIMEZONE_CHANGED))
+
+        val widgetRawAppAction: String? =
+            intent.extras?.getString(MyWidgetOpenApp.key.name)?.takeIf { it.isNotBlank() }
+        val widgetAppAction: MyWidgetOpenApp.AppAction? =
+            widgetRawAppAction?.let { MyWidgetOpenApp.AppAction.parse(it) }
+        if (widgetAppAction != null)
+            MyWidgetOpenApp.emitFlow(widgetAppAction)
+
+        // Remove system paddings including status and navigation bars.
+        // Needs android:windowSoftInputMode="adjustResize" in the manifest.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        updateStatusBarHeight()
+
+        setupWindowInsetsListener()
+
+        setContent {
+
+            val (vm, state) = rememberVm {
+                AppVm()
+            }
+
+            val isZenModeAllowed: Boolean =
+                state.isZenModeAllowed
+            LaunchedEffect(isZenModeAllowed) {
+                // По умолчанию - ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                requestedOrientation = when {
+                    isZenModeAllowed -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                    else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                }
+            }
+
+            val configuration: Configuration =
+                LocalConfiguration.current
+            // В MainActivity мы обрабатываем только isLandscape == false,
+            // isLandscape == true находится в ZenModeView.
+            val isLandscape: Boolean =
+                configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            LaunchedEffect(isLandscape) {
+                if (!isLandscape)
+                    setDefaultSystemBars()
+            }
+            val windowTopInset: Int =
+                windowInsetsFlow.collectAsState().value.top
+            LaunchedEffect(windowTopInset) {
+                if (!isLandscape && (windowTopInset > 0)) {
+                    launch {
+                        delay(1.seconds)
+                        withContext(Dispatchers.Main) {
+                            setDefaultSystemBars()
+                        }
+                    }
+                }
+            }
+
+            MaterialTheme(colors = darkColors()) {
+
+                val backupMessage = state.backupMessage
+                if (backupMessage != null)
+                    BackupMessageView(backupMessage)
+                else if (state.isAppReady) {
+
+                    NavigationFs {
+                        MainScreen()
+                        ShortcutsListener()
+                        if (isLandscape) {
+                            ZenModeView()
+                        }
+                    }
+
+                    LaunchedEffect(Unit) {
+                        try {
+                            AutoBackup.upLastTimeCache(AutoBackupAndroid.getLastTimeOrNull())
+                        } catch (e: Throwable) {
+                            reportApi("MainActivity AutoBackup.upLastTimeCache()\n$e")
+                        }
+                        while (true) {
+                            AutoBackupAndroid.dailyBackupIfNeeded()
+                            delay(30_000.milliseconds)
+                        }
+                    }
+
+                    LaunchedEffect(Unit) {
+                        // Live Updates
+                        var isFirstLiveActivity = true
+                        LiveActivity.flow.filterNotNull().onEachExIn(this) { liveActivity ->
+                            // Without delay doesn't show at start
+                            if (isFirstLiveActivity) {
+                                delay(500.milliseconds)
+                                isFirstLiveActivity = false
+                            }
+                            LiveUpdatesUtils.upsert(
+                                LiveUpdatesUtils.LiveData.build(liveActivity)
+                            )
+                        }
+                        // Notifications Schedule
+                        NotificationAlarm.flow.onEachExIn(this) { notifications ->
+                            AlarmCenter.cancelAllAlarms()
+                            NotificationsUtils.cleanTimerPushes()
+                            notifications.forEach {
+                                AlarmCenter.scheduleNotification(it)
+                            }
+                        }
+                        // TRICK Run after subscribing to LiveActivity and NotificationAlarm flows.
+                        // TRICK Without delay the first event does not handled. 1L enough.
+                        vm.onNotificationsPermissionReady(delayMls = 500)
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        LaunchedEffect(Unit) {
+                            notificationsPermissionProcessing()
+                        }
+                        // Cover the case when a user enables notifications from settings.
+                        // Check only granted permission because if the
+                        // user denied the permission - the app restarts.
+                        // No need to check if NotificationsPermission.flow is null.
+                        LifecycleListener { _, event ->
+                            if ((event == Lifecycle.Event.ON_RESUME) &&
+                                isNotificationsPermissionGranted()
+                            ) {
+                                NotificationsPermission.granted.emit()
+                            }
+                        }
+                    } else {
+                        NotificationsPermission.granted.emit()
+                    }
+
+                    LaunchedEffect(Unit) {
+                        keepScreenOnStateFlow.onEachExIn(this) { keepScreenOn ->
+                            val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                            if (keepScreenOn) window.addFlags(flag)
+                            else window.clearFlags(flag)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        NotificationsUtils.cleanTimerPushes()
+
+        if (MyWidgetReceiver.needRestart) {
+            launchExIo {
+                NotificationAlarm.rescheduleAll()
+                MyWidgetReceiver.needRestart = false
+            }
+        }
+
+        /**
+         * https://developer.android.com/develop/ui/views/layout/immersive#kotlin
+         *
+         * No systemBars(), because on Redmi the first touch opens navbar.
+         *
+         * Needs "android:windowLayoutInDisplayCutoutMode shortEdges" in manifest
+         * to hide dark space on the top while WindowInsetsCompat.Type.statusBars()
+         * like https://stackoverflow.com/q/72179274 in "2. Completely black...".
+         * https://developer.android.com/develop/ui/views/layout/display-cutout
+         */
+        val statusBars = WindowInsetsCompat.Type.statusBars()
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.hide(statusBars) // To show: controller.show(statusBars)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateStatusBarHeight()
+    }
+
+    private fun updateStatusBarHeight() {
+        statusBarHeightFlow.tryEmit(getStatusBarHeight(this@MainActivity))
+    }
+
+    private fun setDefaultSystemBars() {
+        val windowInsetsController: WindowInsetsControllerCompat =
+            WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
+        windowInsetsController.show(WindowInsetsCompat.Type.navigationBars())
+    }
+
+    private fun setupWindowInsetsListener() {
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insetsCompat ->
+            val systemBarInsets: Insets =
+                insetsCompat.getInsets(WindowInsetsCompat.Type.systemBars())
+            val cutoutInsets: Insets =
+                insetsCompat.getInsets(WindowInsetsCompat.Type.displayCutout())
+            launchExIo {
+                windowInsetsFlow.emit(
+                    WindowInsets(
+                        top = systemBarInsets.top,
+                        right = cutoutInsets.right,
+                        bottom = systemBarInsets.bottom,
+                        left = cutoutInsets.left,
+                    )
+                )
+            }
+            insetsCompat
+        }
+    }
+
+    // region Notifications Permission
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun requestNotificationsPermission() {
+        notificationsPermissionRequester.launch(
+            Manifest.permission.POST_NOTIFICATIONS
+        )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun notificationsPermissionProcessing() {
+        when {
+            isNotificationsPermissionGranted() -> {
+                NotificationsPermission.granted.emit()
+            }
+
+            shouldNotificationsPermissionRationale() -> {
+                NotificationsPermission.rationale.emit()
+            }
+
+            else -> {
+                requestNotificationsPermission()
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun isNotificationsPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun shouldNotificationsPermissionRationale(): Boolean =
+        shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+
+    // endregion
+}
+
+@Composable
+private fun BackupMessageView(
+    message: String,
+) {
+    ZStack(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(c.black),
+    ) {
+
+        Text(
+            text = message,
+            modifier = Modifier
+                .align(Alignment.Center),
+            color = c.white,
+        )
+    }
+}
+
+@Composable
+private fun ShortcutsListener() {
+    val context = LocalContext.current
+    val navigationFs = LocalNavigationFs.current
+    LaunchedEffect(Unit) {
+        ShortcutPerformer.flow.onEachExIn(this) { shortcutDb ->
+            try {
+                val uri: String = shortcutDb.uri
+                if (uri.startsWith(ShortcutDb.ANDROID_PACKAGE_PREFIX)) {
+                    val androidPackage = uri.replaceFirst(ShortcutDb.ANDROID_PACKAGE_PREFIX, "")
+                    val intent: Intent? = context.packageManager.getLaunchIntentForPackage(androidPackage)
+                    if (intent == null)
+                        navigationFs.alert("App package not found")
+                    else
+                        context.startActivity(intent)
+                } else {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, shortcutDb.uri.toUri()))
+                }
+            } catch (_: ActivityNotFoundException) {
+                navigationFs.alert("Invalid shortcut link")
+            }
+        }
+    }
+}
+
+private fun getStatusBarHeight(activity: Activity): Dp {
+    val resources = activity.resources
+    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+    if (resourceId > 0)
+        return pxToDp(resources.getDimensionPixelSize(resourceId)).dp
+    reportApi("Invalid status_bar_height $resourceId")
+    return 0.dp
+}

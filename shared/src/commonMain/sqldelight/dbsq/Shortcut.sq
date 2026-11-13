@@ -1,0 +1,51 @@
+import kotlin.Int;
+
+CREATE TABLE ShortcutSQ (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    uri TEXT NOT NULL
+);
+
+--
+-- Select
+
+anyChange:
+SELECT id
+FROM ShortcutSQ
+LIMIT 1;
+
+selectCount:
+SELECT COUNT(*)
+FROM ShortcutSQ;
+
+selectAsc:
+SELECT *
+FROM ShortcutSQ
+ORDER BY id ASC;
+
+--
+-- Insert
+
+insert:
+INSERT INTO ShortcutSQ
+VALUES ?;
+
+--
+-- Update
+
+updateById:
+UPDATE ShortcutSQ
+SET name=?, uri=?
+WHERE id=?;
+
+--
+-- Delete
+
+deleteById:
+DELETE
+FROM ShortcutSQ
+WHERE id=?;
+
+deleteAll:
+DELETE
+FROM ShortcutSQ;

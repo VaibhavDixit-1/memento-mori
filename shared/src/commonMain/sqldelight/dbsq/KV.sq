@@ -1,0 +1,41 @@
+CREATE TABLE KVSQ (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+--
+-- Select
+
+anyChange:
+SELECT key
+FROM KVSQ
+LIMIT 1;
+
+selectAll:
+SELECT *
+FROM KVSQ;
+
+selectByKey:
+SELECT *
+FROM KVSQ
+WHERE key=?
+LIMIT 1;
+
+--
+-- Upsert
+
+upsert:
+INSERT OR REPLACE INTO KVSQ
+(key, value) VALUES (?, ?);
+
+--
+-- Delete
+
+deleteByKey:
+DELETE
+FROM KVSQ
+WHERE key=?;
+
+deleteAll:
+DELETE
+FROM KVSQ;

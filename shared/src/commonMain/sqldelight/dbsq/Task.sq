@@ -1,0 +1,86 @@
+import kotlin.Int;
+
+CREATE TABLE TaskSq (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    folder_id INTEGER AS Int NOT NULL,
+    text TEXT NOT NULL
+);
+
+--
+-- Select
+
+anyChange:
+SELECT id
+FROM TaskSq
+LIMIT 1;
+
+selectAsc:
+SELECT *
+FROM TaskSq
+ORDER BY id ASC;
+
+selectDesc:
+SELECT *
+FROM TaskSq
+ORDER BY id DESC
+LIMIT :limit;
+
+selectById:
+SELECT *
+FROM TaskSq
+WHERE id=?
+LIMIT 1;
+
+--
+-- Insert
+
+insert:
+INSERT INTO TaskSq
+(id, folder_id, text)
+VALUES
+(?, ?, ?);
+
+--
+-- Update
+
+updateId:
+UPDATE TaskSq
+SET id=:newId
+WHERE id=:oldId;
+
+updateById:
+UPDATE TaskSq
+SET folder_id=?, text=?
+WHERE id=?;
+
+updateTextById:
+UPDATE TaskSq
+SET text=?
+WHERE id=?;
+
+updateFolderIdById:
+UPDATE TaskSq
+SET folder_id=?
+WHERE id=?;
+
+updateFolderIdTodoRemove:
+UPDATE TaskSq
+SET folder_id=:newFolderId
+WHERE folder_id=:oldFolderId;
+
+updateTextTodoRemove:
+UPDATE TaskSq
+SET text=?
+WHERE id=?;
+
+--
+-- Delete
+
+deleteById:
+DELETE
+FROM TaskSq
+WHERE id=?;
+
+deleteAll:
+DELETE
+FROM TaskSq;

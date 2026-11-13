@@ -1,0 +1,117 @@
+package me.timeto.app.ui.calendar
+
+import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Divider
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import me.timeto.app.ui.HStack
+import me.timeto.app.ui.H_PADDING
+import me.timeto.app.MainActivity
+import me.timeto.app.ui.VStack
+import me.timeto.app.ui.c
+import me.timeto.app.ui.halfDpCeil
+import me.timeto.app.ui.onePx
+import me.timeto.app.ui.squircleShape
+import me.timeto.app.ui.calendar.list.CalendarListView
+
+private val menuTopPadding: Dp = 8.dp
+
+@Composable
+fun CalendarTabsView() {
+
+    val isCalendarOrList = remember {
+        mutableStateOf(true)
+    }
+
+    val mainActivity = LocalActivity.current as MainActivity
+    val statusBarHeight: Dp =
+        mainActivity.statusBarHeightFlow.collectAsState().value
+
+    VStack(
+        modifier = Modifier
+            .padding(top = statusBarHeight)
+            .fillMaxSize(),
+    ) {
+
+        if (isCalendarOrList.value) {
+            CalendarView(
+                modifier = Modifier
+                    .weight(1f),
+            )
+        } else {
+            CalendarListView(
+                modifier = Modifier
+                    .weight(1f),
+            )
+        }
+
+        Divider()
+
+        HStack(
+            modifier = Modifier
+                .padding(top = menuTopPadding)
+                .navigationBarsPadding(),
+        ) {
+
+            ModeButton(
+                text = "Calendar",
+                modifier = Modifier
+                    .padding(start = H_PADDING - halfDpCeil),
+                isActive = isCalendarOrList.value,
+                onClick = {
+                    isCalendarOrList.value = true
+                },
+            )
+
+            ModeButton(
+                text = "List",
+                modifier = Modifier
+                    .padding(start = 8.dp),
+                isActive = !isCalendarOrList.value,
+                onClick = {
+                    isCalendarOrList.value = false
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ModeButton(
+    text: String,
+    modifier: Modifier,
+    isActive: Boolean,
+    onClick: () -> Unit,
+) {
+    val bgAnimate =
+        animateColorAsState(if (isActive) c.blue else c.transparent).value
+    Text(
+        text = text,
+        modifier = modifier
+            .clip(shape = squircleShape)
+            .clickable {
+                onClick()
+            }
+            .background(bgAnimate)
+            .padding(horizontal = 7.dp)
+            .padding(top = 2.dp + onePx, bottom = 2.dp),
+        color = if (isActive) c.white else c.text,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+    )
+}

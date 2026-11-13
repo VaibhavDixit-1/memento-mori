@@ -1,0 +1,48 @@
+import kotlin.Int;
+
+CREATE TABLE EventTemplateSQ (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    sort INTEGER AS Int NOT NULL,
+    daytime INTEGER AS Int NOT NULL,
+    text TEXT NOT NULL
+);
+
+--
+-- Select
+
+selectAscSorted:
+SELECT *
+FROM EventTemplateSQ
+ORDER BY sort ASC, id ASC;
+
+--
+-- Insert
+
+insertObject:
+INSERT INTO EventTemplateSQ
+VALUES ?;
+
+--
+-- Update
+
+updateById:
+UPDATE EventTemplateSQ
+SET sort=?, daytime=?, text=?
+WHERE id=?;
+
+updateTextTodoRemove:
+UPDATE EventTemplateSQ
+SET text=?
+WHERE id=?;
+
+--
+-- Delete
+
+deleteById:
+DELETE
+FROM EventTemplateSQ
+WHERE id=?;
+
+deleteAll:
+DELETE
+FROM EventTemplateSQ;

@@ -1,0 +1,50 @@
+import kotlin.Int;
+
+CREATE TABLE ChecklistSQ (
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    reset_day INTEGER AS Int NOT NULL
+);
+
+--
+-- Select
+
+anyChange:
+SELECT id FROM ChecklistSQ LIMIT 1;
+
+selectAsc:
+SELECT *
+FROM ChecklistSQ
+ORDER BY id ASC;
+
+--
+-- Insert
+
+insert:
+INSERT INTO ChecklistSQ
+VALUES ?;
+
+--
+-- Update
+
+updateById:
+UPDATE ChecklistSQ
+SET name=?, reset_day=?
+WHERE id=?;
+
+updateResetDayById:
+UPDATE ChecklistSQ
+SET reset_day=?
+WHERE id=?;
+
+--
+-- Delete
+
+deleteById:
+DELETE
+FROM ChecklistSQ
+WHERE id=?;
+
+deleteAll:
+DELETE
+FROM ChecklistSQ;
